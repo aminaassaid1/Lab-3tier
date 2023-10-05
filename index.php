@@ -57,7 +57,7 @@ if (isset($_REQUEST['delete']) && $_REQUEST['delete'] == 'yes')
             <ul class="nav navbar-nav">
                 <li><a href="add.php"><span class="glyphicon glyphicon-plus"></span> Add New</a></li>
             </ul>
-        </div><!--/.nav-collapse -->
+        </div>
     </div>
 </nav>
 
