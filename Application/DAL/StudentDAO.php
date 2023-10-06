@@ -3,7 +3,7 @@ class StudentDAO
 {
     private $db;
     private $databaseConnectionObj;
-
+    
     public function __construct()
     {
         $this->databaseConnectionObj = new DatabaseConnection();
@@ -44,6 +44,34 @@ class StudentDAO
         }
 
         return false;
+    }
+
+
+    public function AddStudent($student)
+    {
+
+        $sql = "INSERT INTO Student ( `Name`, `Email`, `DateOfBirth`)
+                VALUES (
+                  :name,
+                  :email,
+                  :dateOfBirth
+                )";
+
+        $stmt = $this->db->prepare($sql);
+
+        $name = $student->GetName();
+        $email = $student->GetEmail();
+        $dateOfBirth = $student->GetDateOfBirth();
+
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':dateOfBirth', $dateOfBirth);
+
+        $stmt->execute();
+
+        $lastInsertId = $this->db->lastInsertId();
+
+        return $lastInsertId;
     }
 
     public function UpdateStudent($student)

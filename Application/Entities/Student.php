@@ -29,4 +29,8 @@ class Student
     {
         return $this->email;
     }
+    public function GetDateOfBirth()
+    {
+        return $this->dateOfBirth;
+    }
 }
