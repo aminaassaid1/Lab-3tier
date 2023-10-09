@@ -14,7 +14,8 @@ class StudentDAO
     {
         $sql = "SELECT * FROM Student";
         $raw_result = $this->db->prepare($sql);
-        if (!$raw_result->execute()) {
+        if (!$raw_result->execute()) 
+        {
             $raw_result = null;
             exit();
         }
@@ -100,9 +101,11 @@ class StudentDAO
         $sql = "SELECT * FROM Student WHERE Id = $id";
         $raw_result = $this->db->prepare($sql);
         $raw_result->execute();
-        if (!$raw_result->rowCount() > 0) {
+        if (!$raw_result->rowCount() > 0) 
+        {
             return false;
-        } else {
+        } else 
+        {
             return true;
         }
     }
@@ -113,9 +116,11 @@ class StudentDAO
         $raw_result = $this->db->prepare($sql);
         $raw_result->execute();
         $isEmail = $raw_result->fetch();
-        if ($isEmail !== false) {
+        if ($isEmail !== false) 
+        {
             return true;
-        } else {
+        } else 
+        {
             return false;
         }
     }
