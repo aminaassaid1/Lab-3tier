@@ -20,7 +20,8 @@ class StudentBLO
         return $this->studentDao->GetStudent($studentId);
     }
     
-    public function AddStudent($student) {
+    public function AddStudent($student) 
+    {
 
         $insertedId = 0;
 
