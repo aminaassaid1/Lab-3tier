@@ -1,20 +1,17 @@
 <?php
-class DatabaseConnection {
+try {
+    // Database connection parameters
+    $serverName = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "prototype";
 
-    private $host = "localhost";
-    private $user = 'root';
-    private $dbname = 'stdinfo';
-    private $password = '';
+    // Create a PDO instance with error handling
+    $conn = new PDO("mysql:host=$serverName;dbname=$dbname;charset=utf8", $username, $password);
 
-    public function connect(){
-        try{
-            $dsn = "mysql:host=" . $this->host . ";dbname=" . $this->dbname;
-            $db = new PDO($dsn, $this->user , $this->password);
-            $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE , PDO::FETCH_ASSOC);
-            return $db;
-        }catch(PDOException $e){
-            echo'connection failed' . $e->getMessage();
-        }
-    }
+    // Set PDO error mode to exceptions
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
 }
 ?>

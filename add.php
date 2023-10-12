@@ -1,67 +1,55 @@
 <?php
+global $conn, $personneDAO;
 require_once('loader.php');
-$errorMessage = '';
 
-if( isset($_POST['studentSubmitButton']) && $_POST['studentSubmitButton'] == 'Add Student' )
-{
-    $studentBllObj = new StudentBLO();
-    $studentName = $_POST['studentName'];
-    $studentEmail = $_POST['studentEmail'];
-    $studentDateOfBirth = $_POST['studentDateOfBirth'];
+$personneDAO = new PersonneDAO($conn);
 
-    $newStudent = new Student(0, $studentName, $studentEmail, $studentDateOfBirth);
-    $addStudentResult = $studentBllObj->AddStudent($newStudent);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
+    $nom = $_POST['nom'];
+    $cne = $_POST['cne'];
+    $ville = $_POST['ville'];
 
-    if($addStudentResult > 0) {
-        header("Location: edit.php?id=". $addStudentResult .'&action=add');
-    } else {
-        if ($studentBllObj->errorMessage != '') {
-            $errorMessage = $studentBllObj->errorMessage;
-        } else {
-            $errorMessage = 'Record can\'t be added. Operation failed.';
-        }
+    try {
+        $id_ville = $personneDAO->getVilleIdByName($ville);
+        $personneDAO->createStagiaire($nom, "samadi", $cne, $id_ville);
+        header("Location: index.php");
+        exit();
+    } catch (Exception $e) {
+        $errorMessage = $e->getMessage();
     }
 }
-
-$pageTitle = 'Add New Student';
-include_once("Templates/header.php");
 ?>
-<div class="page-header">
-    <h1>Add New Student</h1>
-</div>
-
-<?php if ($errorMessage != ''): ?>
-    <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
-<?php endif; ?>
 
 
-    <form action="add.php" method="POST" name="studentInfoForm" id="studentInfoForm" class="form-horizontal">
-        <div class="form-group">
-            <label for="studentName" class="col-sm-2 control-label">Name</label>
-            <div class="col-sm-4">
-                <input type="text"  name="studentName" id="studentName" class="form-control" placeholder="Name" />
-            </div>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+<!-- Add form -->
+<div class="container mt-5">
+    <form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="nom" class="form-label">Nom:</label>
+            <input type="text" class="form-control" id="nom" name="nom" required>
         </div>
-        <div class="form-group">
-            <label for="studentEmail" class="col-sm-2 control-label">Email</label>
-            <div class="col-sm-4">
-                <input type="email"  name="studentEmail" id="studentEmail" class="form-control" placeholder="Email" />
-            </div>
+        <div class="mb-3">
+            <label for="cne" class="form-label">CNE:</label>
+            <input type="text" class="form-control" id="cne" name="cne" required>
         </div>
-        <div class="form-group">
-            <label for="studentDateOfBirth" class="col-sm-2 control-label">Date Of Birth</label>
-            <div class="col-sm-3">
-                <input type="date"  name="studentDateOfBirth" id="studentDateOfBirth" class="form-control" placeholder="Date Of Birth" />
-            </div>
+        <div class="mb-3">
+            <label for="ville" class="form-label">Ville</label>
+            <input type="text" class="form-control" id="ville" name="ville" required>
         </div>
-
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-4">
-                <input type="submit" name="studentSubmitButton" id="studentSubmitButton" value="Add Student" class="btn  btn-primary" />
-            </div>
-        </div>
-
+        <button type="submit" name="add" class="btn btn-primary">Add Stagiaire</button>
     </form>
-
-
-<?php include_once("Templates/footer.php"); ?>
+</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</html>

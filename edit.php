@@ -1,95 +1,109 @@
 <?php
-
+global $conn, $personneDAO;
 require_once('loader.php');
 
-$addSuccess = false;
-$updateSuccess = false;
-$errorMessage = "";
+$personneDAO = new PersonneDAO($conn);
 
-if (isset($_POST['studentSubmitButton']) && $_POST["studentSubmitButton"] == 'Update Student') {
-    $studentBllObj = new StudentBLO();
-    $studentId = $_POST['studentId'];
-    $studentName = $_POST['studentName'];
-    $studentEmail = $_POST['studentEmail'];
-    $studentDateOfBirth = $_POST['studentDateOfBirth'];
+global $conn, $personneDAO;
+require_once('loader.php');
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
 
-    $aStudent = new Student($studentId, $studentName, $studentEmail, $studentDateOfBirth);
-    $updateResult = $studentBllObj->UpdateStudent($aStudent);
+    $sql = "SELECT * FROM personne WHERE id = :id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if ($updateResult > 0) {
-        $updateSuccess = true;
-    } else {
-        if ($studentBllObj->errorMessage != '') {
-            $errorMessage = $studentBllObj->errorMessage;
-        } else {
-            $errorMessage = 'Record cannot be updated. Operation failed.';
-        }
-    }
-} elseif (isset($_GET['id']) && (int)$_GET['id'] > 0) {
-    $studentId = (int)$_GET['id']; 
-    $action = '';
-    if (isset($_GET['action'])) {
-        $action = $_GET['action'];
-    }
-    $studentBllObj = new StudentBLO();
-    $aStudent = $studentBllObj->GetStudent($studentId);
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($action == 'add') {
-        $addSuccess = true;
+    if (!$student) {
+        echo "Student not found.";
+        exit();
     }
 } else {
-    header("location:index.php");
+    echo "Invalid request. Please provide student ID.";
+    exit();
 }
 
-$pageTitle = "Edit Student";
-include_once("Templates/header.php");
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
+    $updatedNom = $_POST['edit-nom'];
+    $updatedCNE = $_POST['edit-CNE'];
+    $updatedVille = $_POST['edit-ville'];
 
+    try {
+        $id_ville = $personneDAO->getVilleIdByName($ville);
+        $personneDAO->updateStagiaire($id, $nom, $cne, $ville);
+        header("Location: index.php");
+        exit();
+    } catch (Exception $e) {
+        $errorMessage = $e->getMessage();
+    }
+}
 ?>
 
-<div class="page-header">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="This is a simple implementation of OOP in PHP. This application is created for educational purposes." />
+    <meta name="author" content="Arif Uddin" />
+    <link href="/Assets/Styles/Styles.css" rel="stylesheet">
+
+    <!-- Bootstrap 5.3.2 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <title>Edit Student</title>
+</head>
+
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="./">Student Information</a>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<header class="page-header text-center">
     <h1>Edit Student</h1>
-</div>
+</header>
 
-<?php if ($addSuccess === true): ?>
-    <div class="alert alert-success">Record added successfully</div>
-<?php endif; ?>
+<!-- Edit Form -->
+<section class="container mt-4">
+    <form method="POST" action="<?php echo $_SERVER['PHP_SELF'] . '?id=' . $id; ?>">
+        <input type="hidden" name="edit-id" value="<?php echo $id; ?>">
 
-<?php if ($updateSuccess === true): ?>
-    <div class="alert alert-success">Record updated successfully</div>
-<?php endif; ?>
-
-<?php if ($errorMessage != ''): ?>
-    <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
-<?php endif; ?>
-
-<form action="edit.php" method="post" name="studentInform" id="studentInfoForm" class="form-horizontal">
-
-    <div class="form-group">
-        <label for="studentName" class="col-sm-2">Name</label>
-        <div class="col-sm-4">
-            <input type="text" value="<?php echo $aStudent->getName();?>" name="studentName" id="studentName" class="form-control" placeholder="Name">
+        <div class="mb-3">
+            <label for="edit-nom" class="form-label">Nom:</label>
+            <input type="text" class="form-control" name="edit-nom" id="edit-nom"
+                   value="<?php echo isset($student['nom']) ? $student['nom'] : ''; ?>" required>
         </div>
-    </div>
-    <div class="form-group">
-        <label for="studentEmail" class="col-sm-2">Email</label>
-        <div class="col-sm-4">
-            <input type="email" value="<?php echo $aStudent->getEmail();?>" name="studentEmail" id="studentEmail" class="form-control" placeholder="Email">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="studentDateOfBirth" class="col-sm-2">Date Of Birth</label>
-        <div class="col-sm-4">
-            <input type="date" value="<?php echo $aStudent->getDateOfBirth();?>" name="studentDateOfBirth" id="studentDateOfBirth" class="form-control" placeholder="Date of birth">
-        </div>
-    </div>
 
-    <input type="hidden" value="<?php echo $aStudent->GetId(); ?>" name="studentId" id="studentId" />
-    <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-4">
-            <input type="submit" name="studentSubmitButton" id="studentSubmitButton" value="Update Student" class="btn  btn-primary" />
+        <div class="mb-3">
+            <label for="edit-CNE" class="form-label">CNE:</label>
+            <input type="text" class="form-control" name="edit-CNE" id="edit-CNE"
+                   value="<?php echo isset($student['CNE']) ? $student['CNE'] : ''; ?>" required>
         </div>
-    </div>
 
-</form>
+        <div class="mb-3">
+            <label for="edit-ville" class="form-label">Ville:</label>
+            <input type="text" class="form-control" name="edit-ville" id="edit-ville"
+                   value="<?php echo isset($student['ville']) ? $student['ville'] : ''; ?>" required>
+        </div>
 
-<?php include_once("Templates/footer.php"); ?>
+        <button type="submit" class="btn btn-primary" name="update">Update</button>
+    </form>
+</section>
+
+<!-- Bootstrap and jQuery Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+</body>
+
+</html>
